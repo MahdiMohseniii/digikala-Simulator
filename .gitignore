@@ -1,0 +1,14 @@
+# Ignore virtual environment  
+venv/
+
+# Ignore Python cache files  _
+__pycache__/
+*.py[cod]
+
+# Ignore database files (if using SQLite for example)  
+*.db  
+*.sqlite3  
+
+# Ignore configuration files that should not be shared  
+*.env
+

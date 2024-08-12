@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">سبد خرید شما</h1>
+            <p class="lead fw-normal text-white-50 mb-0">اینجا هرچی که بخوای بخری اضافه میشه</p>
+        </div>
+    </div>
+</header><br>
+{% if cart_products%}
+    {% for product in cart_products %}
+    <div class="container">
+        <div class="card mb-3" ">
+            <div class="row g-0">
+            <div class="col-md-4">
+                <img src="{{ product.picture.url }}" class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                <h5 class="card-title"> {{product.name}} </h5>
+                <p class="card-text"> {{ product.description }} </p>
+                {% if product.is_sale %}
+                <h3>💰 قیمت:<del>{{ product.price |intcomma }} </del>&nbsp;-&nbsp; {{ product.sale_price |intcomma }}</h3>
+                {% else %}
+                <h3>💰 قیمت:{{ product.price |intcomma }}</h3>
+                {% endif %}
+                <h3 class="card-text" >
+                    تعداد:
+                <select class="form-select" id="select{{product.id}}" >
+                    {% for key,value in quantities.items %}
+                     {% if key == product.id|slugify %}
+                     <option selected>{{ value }}</option> 
+                     {% endif %}
+                    {% endfor %}
+                    
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    </select>
+                    
+                </h3>
+                
+                <button type="button" class="btn btn-outline-primary update-cart" data-index={{product.id}} >ویرایش</button>
+                <button type="button" class="btn btn-outline-danger delete-product" data-index={{product.id}} >حذف </button>
+                <a href="{% url 'home' %}" class="btn btn-outline-success">بازگشت با خانه</a>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <h1>مجموع کل سفارشات: <span style="background-color: aqua; border-radius: 17px;">{{total|intcomma}}</span> تومان</h1>
+{% else %}<br><br>
+<center> <h3 class="container">&#128531; سبد خرید شما خالیست </h3> </center>
+{% endif %}
+<br><br>
+<script> 
+    $(document).on('click', '.update-cart', function (e) {
+      e.preventDefault();
+
+      var productid = $(this).data('index')
+      $.ajax({
+        type: 'POST',
+        url:'{% url "cart_update" %}',
+        data: {
+          product_id: $(this).data('index'),
+          product_qty: $('#select'+productid+' option:selected').text(),
+          csrfmiddlewaretoken: '{{csrf_token}}',
+          action:'post',
+        },
+    
+        success: function(json){
+          // console.log(json);
+        //   document.getElementById('cart_quantity').textContent = json.qty
+        location.reload();
+        },
+    
+        error: function(xhr, errmsg, err){
+        }
+      })
+    })
+// delete
+    $(document).on('click', '.delete-product', function (e) {
+      e.preventDefault();
+
+      $.ajax({
+        type: 'POST',
+        url:'{% url "cart_delete" %}',
+        data: {
+          product_id: $(this).data('index'),
+          csrfmiddlewaretoken: '{{csrf_token}}',
+          action:'post',
+        },
+    
+        success: function(json){
+        location.reload();
+        },
+    
+        error: function(xhr, errmsg, err){
+        }
+      })
+    })
+    </script>
+
+
+{% endblock %}

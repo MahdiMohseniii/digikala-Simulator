@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<br><br><br>
+<div class="container">
+    <div class="card mb-3" ">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img src="{{ product.picture.url }}" class="img-fluid rounded-start" alt="...">
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <h5 class="card-title"> {{product.name}} </h5>
+              <p class="card-text"> {{ product.description }} </p>
+              {% if product.is_sale %}
+              <h3>💰 قیمت:<del>{{ product.price |intcomma }}--</del>{{ product.sale_price |intcomma }}</h3>
+              {% else %}
+              <h3>💰 قیمت:{{ product.price |intcomma }}</h3>
+              {% endif %}
+              تعداد
+              <select class="form-select" id="cart_qty" >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+              <br><br>
+              <button class="btn btn-outline-secondary" type="button" value="{{ product.id }}" id="add-cart">اضافه کردن به سبد خرید</button>
+            <a href="{% url 'home' %}" class="btn btn-outline-success">بازگشت با خانه</a>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+<br><br><br><br><br><br><br><br><br><br><br><br>
+<script>  
+  $(document).on('click', '#add-cart', function (e) {  
+      e.preventDefault();  
+      $.ajax({  
+          type: 'POST',  
+          url:'{% url "cart_add" %}',  
+          data: {  
+              product_id: $(this).val(), // Assuming that button's value corresponds to product ID  
+              product_qty: $('#cart_qty option:selected').text(), // Updated id selector  
+              csrfmiddlewaretoken: '{{ csrf_token }}',  
+              action: 'post',  
+          },  
+          success: function(json){  
+              document.getElementById('cart_quantity').textContent = json.qty; 
+              location.reload(); 
+          },  
+          error: function(xhr, errmsg, err){  
+              console.error(xhr.status + ": " + xhr.responseText);  
+          }  
+      });  
+  });  
+  </script>
+
+<!-- <script> 
+$(document).on('click', '#add-cart', function (e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url:'{% url "cart_add" %}',
+    data: {
+      product_id: $('#add-cart').val(),
+      product_qty: $('#cart_qty option:selected').text(), // Corrected id here,
+      csrfmiddlewaretoken: '{{csrf_token}}',
+      action:'post',
+    },
+
+    success: function(json){
+      // console.log(json);
+      document.getElementById('cart_quantity').textContent = json.qty
+    },
+
+    error: function(xhr, errmsg, err){
+    }
+  })
+})
+</script> -->
+{% endblock %}
